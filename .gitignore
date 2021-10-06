@@ -2,3 +2,4 @@ OUTFILES/*.log
 OUTFILES/*.out
 USBC_1DAY/*.txt
 USBC_PEAKS/*.txt
+*.pyc
