@@ -267,7 +267,7 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
   dates.append(first_date)
   flows.append(0)
 
-  print "Reading input timeseries for %s\n" % location
+  print ("Reading input timeseries for %s") % (location)
 
   missing_log_file_name = r"outfiles/" + location + "_missing.log"
   missing_log_file = open(missing_log_file_name, "w")
@@ -288,7 +288,7 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
       missing_log_file.write("Error: %s \t line: %s" % (location, line)) 
       flows.append(0.0)
       
-  print "Generating smoothed (hourly) timeseries\n"
+  print ("Generating smoothed (hourly) timeseries")
 
   x_days = pd.PeriodIndex(dates, freq = 'D')
   y_days = np.array(flows)
@@ -305,7 +305,7 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
   
   if peaks_file_name: 
 
-    print "Inserting peaks\n"  
+    print ("Inserting peaks")
     peaks_readlines = open(peaks_file_name, "r").readlines()
     del peaks_readlines[0:7]
     peak_dates = []
@@ -360,7 +360,7 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
   else:
     peak_log_file.write("No peaks specified")   
 
-  print "Cleaning negative flows\n"
+  print ("Cleaning negative flows")
 
   hourly_hydrograph = generate_hydrograph(hourly_accumulation)
   linear_function = interp1d(hourly_accumulation.dropna().index.astype('int'), 
@@ -373,11 +373,11 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
 
     
     count+=1
-    print "%s iterations completed; min flow = %f\n" % (count, 
+    print ("%s iterations completed; min flow = %f\n") % (count, 
       np.min(hourly_hydrograph))
     print(hourly_hydrograph.loc[hourly_hydrograph<0].describe())
 
-  print "Checking peaks\n" 
+  print ("Checking peaks") 
 
   if peaks_file_name:     
     for date in peak_dates:
@@ -390,13 +390,13 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
           or hourly_hydrograph[hourly_date + 1] > (peak_dictionary[date] \
           + 1)) and peak_good == True:
         
-          print "Peak on Date: %s is being overestimated\n" % (real_dates[date])
+          print ("Peak on Date: %s is being overestimated") % (real_dates[date])
           peak_log_file.write("Peak on Date: %s is being overestimated\n" 
             % (real_dates[date]))
           peak_good = False
 
 
-  print "Writing results to file\n"
+  print ("Writing results to file")
 
   output_file_name = r"OUTFILES/" + location + ".out"
   y_hourly_hydrograph_string = []
@@ -429,18 +429,5 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
 
   end_timer = time.clock()
   compute_time = (end_timer-start_timer)/60
-  print "Compute time: %.2f minutes\n" % compute_time
+  print( "Compute time: %.2f minutes") % (compute_time)
 
-if __name__ in ["main", "__main__"]:
-
-  import sys
-  
-if __name__ in ["main", "__main__"]:
-
-  import sys
-  
-  try:
-    sys.argv[3]
-    spline(sys.argv[1], sys.argv[2], sys.argv[3])
-  except:
-    spline(sys.argv[1], sys.argv[2])
