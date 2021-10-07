@@ -1,1 +1,1 @@
-__all__ = ['spline']
+__all__ = ['spline', 'import_smooth_ts']
