@@ -384,7 +384,7 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
       for hour in range(0, 24):
         hourly_date = pd.Period(freq = "H", year = date.year, 
           month = date.month, day = date.day, hour = hour)
-        hourly_ordinate = hourly_date.value
+        hourly_ordinate = hourly_date
         if (hourly_hydrograph[hourly_date] > (peak_dictionary[date] + 1) \
           or hourly_hydrograph[hourly_date + 1] > (peak_dictionary[date] \
           + 1)) and peak_good == True:
