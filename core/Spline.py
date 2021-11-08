@@ -391,7 +391,7 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
           or hourly_hydrograph[hourly_date + 1] > (peak_dictionary[date] \
           + 1)) and peak_good == True:
         
-          print ("Peak on Date: %s is being overestimated") % (real_dates[date])
+          print (f"Peak on Date: {real_dates[date].to_timestamp().strftime('%Y-%m-%d')} is being overestimated") 
           peak_log_file.write("Peak on Date: %s is being overestimated\n" 
             % (real_dates[date]))
           peak_good = False
