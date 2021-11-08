@@ -4,8 +4,17 @@ from pydsstools.core import TimeSeriesContainer
 
 
 def import_smooth_ts(outfile, out_dss, out_dss_path=None, day_offset = None):
+    """
+    DSS import helper function.  Imports smoothed time series as regular time series.
 
+    Args:
+        outfile ([str]): [file path to output file from spline interpolation]
+        out_dss ([type]): [dss output file path.  Can exist or be a new file]
+        out_dss_path ([str], optional): [dss path name for output record]. Defaults to line 1 of output file.
+        day_offset ([int], optional): [day shift for output time series]. Defaults to None.
+    """
 
+    #TODO make cleaner input output path handling
     df = pd.read_csv(f'OUTFILES\{outfile}.out')
 
     if day_offset is None:

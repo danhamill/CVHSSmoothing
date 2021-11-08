@@ -256,6 +256,7 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
  
   start_timer = time.clock()
  
+  #TODO make cleaner input filehanding logic
   daily_flow_readlines = open(daily_flow_filename, "r").readlines()
   timeseries_info = read_timeseries_info(daily_flow_readlines)
   del daily_flow_readlines[0:7]
@@ -300,6 +301,7 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
   hourly_accumulation = hourly_accumulation.reindex(targ_idx)
   hourly_accumulation[-1] = np.max(hourly_accumulation)
 
+  #TODO make cleaner output file handling
   peak_log_file_name = r"outfiles/" + location + "_peaks.log"
   peak_log_file = open(peak_log_file_name, "w")
   
@@ -374,7 +376,7 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
     
     count+=1
     print (f"{count} iterations completed; min flow = {np.min(hourly_hydrograph)}") 
-    print(hourly_hydrograph.loc[hourly_hydrograph<0].describe())
+    #print(hourly_hydrograph.loc[hourly_hydrograph<0].describe())
 
   print ("Checking peaks") 
 
