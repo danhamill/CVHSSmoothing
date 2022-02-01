@@ -254,7 +254,7 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
   
   """
  
-  start_timer = time.clock()
+  start_timer = time.time()
  
   #TODO make cleaner input filehanding logic
   daily_flow_readlines = open(daily_flow_filename, "r").readlines()
@@ -428,7 +428,7 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
   output_file.write("FINISH")
   output_file.close()
 
-  end_timer = time.clock()
+  end_timer = time.time()
   compute_time = (end_timer-start_timer)/60
   print( f"Compute time: {compute_time:.2f} minutes")
 
