@@ -270,7 +270,7 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
 
   print (f"Reading input timeseries for {location}") 
 
-  missing_log_file_name = r"outfiles/" + location + "_missing.log"
+  missing_log_file_name = location + "_missing.log"
   missing_log_file = open(missing_log_file_name, "w")
 
 
@@ -297,12 +297,12 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
   y_days_cumsum = np.cumsum(y_days)
   daily_accumulation = pd.Series(y_days_cumsum, index = dates)
   hourly_accumulation = daily_accumulation.asfreq('H', how='start')
-  targ_idx = pd.period_range(daily_accumulation.index.min(), daily_accumulation.index.max(), freq='H')
+  targ_idx = pd.period_range(daily_accumulation.index.min()-1, daily_accumulation.index.max(), freq='H')[1:]
   hourly_accumulation = hourly_accumulation.reindex(targ_idx)
   hourly_accumulation[-1] = np.max(hourly_accumulation)
 
   #TODO make cleaner output file handling
-  peak_log_file_name = r"outfiles/" + location + "_peaks.log"
+  peak_log_file_name =  location + "_peaks.log"
   peak_log_file = open(peak_log_file_name, "w")
   
   if peaks_file_name: 
@@ -399,7 +399,7 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
 
   print ("Writing results to file")
 
-  output_file_name = r"OUTFILES/" + location + ".out"
+  output_file_name = location 
   y_hourly_hydrograph_string = []
   for y in hourly_hydrograph:
     if y >= 0:
