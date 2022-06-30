@@ -4,3 +4,12 @@ USBC_1DAY/*.txt
 USBC_PEAKS/*.txt
 *.pyc
 *.dss
+OUTFILES/Yuba-Feather/CVHS_DEER_CR_NR_SMARTVILLE_PCHIP.out
+OUTFILES/Yuba-Feather/CVHS_DEER_CR_NR_SMARTVILLE_PCHIP.out_missing.log
+OUTFILES/Yuba-Feather/CVHS_DEER_CR_NR_SMARTVILLE_PCHIP.out_peaks.log
+OUTFILES/Yuba-Feather/CVHS_DEER_CR_NR_SMARTVILLE.out
+OUTFILES/Yuba-Feather/CVHS_DEER_CR_NR_SMARTVILLE.out_missing.log
+OUTFILES/Yuba-Feather/CVHS_DEER_CR_NR_SMARTVILLE.out_peaks.log
+OUTFILES/Yuba-Feather/WCM_Update_DEER.out
+OUTFILES/Yuba-Feather/WCM_Update_DEER.out_missing.log
+OUTFILES/Yuba-Feather/WCM_Update_DEER.out_peaks.log
