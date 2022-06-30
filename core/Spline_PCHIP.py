@@ -223,10 +223,9 @@ def generate_hydrograph(hourly_accumulation):
     mask = hourly_accumulation.isna()) 
   masked_flows = ma.array(hourly_accumulation.values,
     mask = hourly_accumulation.isna) 
-  spline_function = interpolate.splrep(masked_dates.compressed(),
-    hourly_accumulation.dropna().values, s=0)
-  y_spline = interpolate.splev(hourly_accumulation.index.view('int64'),
-    spline_function, der=0)      
+  spline_function = interpolate.PchipInterpolator(masked_dates.compressed(),
+    hourly_accumulation.dropna().values)
+  y_spline = spline_function(hourly_accumulation.index.view('int64'),)      
   y_hourly_hydrograph_temp = np.diff(y_spline)*24
   y_hourly_hydrograph = np.zeros(np.size(hourly_accumulation))
   for i in range(1, np.size(hourly_accumulation)):
@@ -332,70 +331,8 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
         peak_log_file.write("Peaksfile: %s \t line: %s, does not contain a \
           valid peak value, skipping line\n" % (peaks_file_name, line))
   
-    for i in range(0, len(peak_dates)):
-
-        if(peak_types[i] == "0"):
-          hourly_accumulation = insert_peak_1am(daily_accumulation, 
-            hourly_accumulation, peak_dates[i], peak_values[i])
-          peak_log_file.write("Inserting peak of %.2f on %s at 1 AM\n" % (peak_values[i], peak_dates[i])) 
-
-        if(peak_types[i] == "1"):
-          hourly_accumulation = insert_peak_12am(daily_accumulation, 
-            hourly_accumulation, peak_dates[i], peak_values[i])
-          peak_log_file.write("Inserting peak of %.2f on %s at 12 AM\n" % (peak_values[i], peak_dates[i])) 
-
-        if(peak_types[i] == "2"):
-          hourly_accumulation = insert_peak_11am(daily_accumulation, 
-            hourly_accumulation, peak_dates[i], peak_values[i])
-          peak_log_file.write("Inserting peak of %.2f on %s at 11 AM\n" % (peak_values[i], peak_dates[i]))    
-       
-        if(peak_types[i] == "3"):
-          hourly_accumulation = insert_peak_11pm(daily_accumulation, 
-            hourly_accumulation, peak_dates[i], peak_values[i])
-          peak_log_file.write("Inserting peak of %.2f on %s at 11 PM\n" % (peak_values[i], peak_dates[i]))    
-          
-        if(peak_types[i] == "4"):
-          hourly_accumulation = insert_peak_10pm(daily_accumulation, 
-            hourly_accumulation, peak_dates[i], peak_values[i])
-          peak_log_file.write("Inserting peak of %.2f on %s at 10 PM\n" % (peak_values[i], peak_dates[i]))  
-
-  else:
-    peak_log_file.write("No peaks specified")   
-
-  print ("Cleaning negative flows")
 
   hourly_hydrograph = generate_hydrograph(hourly_accumulation)
-  linear_function = interp1d(hourly_accumulation.dropna().index.view('int64'), 
-                             hourly_accumulation.dropna().values, kind = 'linear')
-  count = 0
- 
-  while np.min(hourly_hydrograph) <= -0.01 and count < 15:
-    hourly_accumulation.loc[(hourly_hydrograph <0) | (hourly_hydrograph.shift(1) <0)] = linear_function(hourly_accumulation.loc[(hourly_hydrograph <0) | (hourly_hydrograph.shift(1) <0)].index.view('int64'))
-    hourly_hydrograph = generate_hydrograph(hourly_accumulation)
-
-    
-    count+=1
-    print (f"{count} iterations completed; min flow = {np.min(hourly_hydrograph)}") 
-    #print(hourly_hydrograph.loc[hourly_hydrograph<0].describe())
-
-  print ("Checking peaks") 
-
-  if peaks_file_name:     
-    for date in peak_dates:
-      peak_good = True
-      for hour in range(0, 24):
-        hourly_date = pd.Period(freq = "H", year = date.year, 
-          month = date.month, day = date.day, hour = hour)
-        hourly_ordinate = hourly_date
-        if (hourly_hydrograph[hourly_date] > (peak_dictionary[date] + 1) \
-          or hourly_hydrograph[hourly_date + 1] > (peak_dictionary[date] \
-          + 1)) and peak_good == True:
-        
-          print (f"Peak on Date: {real_dates[date].to_timestamp().strftime('%Y-%m-%d')} is being overestimated") 
-          peak_log_file.write("Peak on Date: %s is being overestimated\n" 
-            % (real_dates[date]))
-          peak_good = False
-
 
   print ("Writing results to file")
 
@@ -431,4 +368,9 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
   end_timer = time.time()
   compute_time = (end_timer-start_timer)/60
   print( f"Compute time: {compute_time:.2f} minutes")
+
+
+  return hourly_hydrograph
+    #print(hourly_hydrograph.loc[hourly_hydrograph<0].describe())
+
 

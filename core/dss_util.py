@@ -15,7 +15,7 @@ def import_smooth_ts(outfile, out_dss, out_dss_path=None, day_offset = None):
     """
 
     #TODO make cleaner input output path handling
-    df = pd.read_csv(f'OUTFILES\{outfile}.out')
+    df = pd.read_csv(outfile)
 
     if day_offset is None:
         start_date = df.iloc[2][0]
