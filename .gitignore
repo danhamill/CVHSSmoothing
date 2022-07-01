@@ -1,7 +1,5 @@
 OUTFILES/*.log
 OUTFILES/*.out
-USBC_1DAY/*.txt
-USBC_PEAKS/*.txt
 *.pyc
 *.dss
 OUTFILES/Yuba-Feather/CVHS_DEER_CR_NR_SMARTVILLE_PCHIP.out
@@ -13,3 +11,9 @@ OUTFILES/Yuba-Feather/CVHS_DEER_CR_NR_SMARTVILLE.out_peaks.log
 OUTFILES/Yuba-Feather/WCM_Update_DEER.out
 OUTFILES/Yuba-Feather/WCM_Update_DEER.out_missing.log
 OUTFILES/Yuba-Feather/WCM_Update_DEER.out_peaks.log
+USBC_1DAY/ISB_POR.txt
+USBC_1DAY/ISB.txt
+USBC_1DAY/KERN-LOCAL.txt
+USBC_1DAY/KERN.txt
+USBC_PEAKS/ISB_POR.txt
+USBC_PEAKS/ISB.txt
