@@ -228,13 +228,26 @@ def generate_hydrograph(hourly_accumulation):
   y_spline = interpolate.splev(hourly_accumulation.index.view('int64'),
     spline_function, der=0)      
   y_hourly_hydrograph_temp = np.diff(y_spline)*24
-  y_hourly_hydrograph = np.zeros(np.size(hourly_accumulation))
-  for i in range(1, np.size(hourly_accumulation)):
-    y_hourly_hydrograph[i] =  y_hourly_hydrograph_temp[i-1]
+  y_hourly_hydrograph = np.hstack((0,y_hourly_hydrograph_temp))
   hydrologic_timeseries = pd.Series(y_hourly_hydrograph, 
     index = hourly_accumulation.index)  
 
   return hydrologic_timeseries
+
+def read_peaks_file(peaks_file_name):
+
+  tmp = pd.read_csv(peaks_file_name,sep ='\t', skiprows=7, header=None, usecols=[1,2,3], names = ['date','peak','peak_types'])
+  tmp.loc[:,'date'] = pd.to_datetime(tmp.date).dt.to_period(freq='D')
+  tmp.loc[:,'faux_date'] = tmp.date + 146097 
+  tmp = tmp.dropna()
+
+  peak_types = tmp.peak_types.astype(int).astype(str).to_list()
+  peak_dictionary = dict(zip(tmp.faux_date, tmp.peak.astype(float)))
+  real_dates = dict(zip(tmp.faux_date, tmp.date))
+  peak_dates = tmp.faux_date.to_list()
+
+  return peak_types, peak_dictionary, real_dates, peak_dates
+
 
 def spline(daily_flow_filename, location, peaks_file_name = False):
   """ 
@@ -294,70 +307,108 @@ def spline(daily_flow_filename, location, peaks_file_name = False):
   x_days = pd.PeriodIndex(dates, freq = 'D')
   y_days = np.array(flows)
   daily_hydrograph = pd.Series(y_days, index = dates)
-  y_days_cumsum = np.cumsum(y_days)
-  daily_accumulation = pd.Series(y_days_cumsum, index = dates)
+  #TODO might want to remove this check for negative flows,
+  #TODO but adding here because this has been forgotten before...
+  daily_hydrograph[daily_hydrograph<0] = 0
+
+  daily_accumulation = daily_hydrograph.cumsum()
+
+
   hourly_accumulation = daily_accumulation.asfreq('H', how='start')
   targ_idx = pd.period_range(daily_accumulation.index.min()-1, daily_accumulation.index.max(), freq='H')[1:]
   hourly_accumulation = hourly_accumulation.reindex(targ_idx)
   hourly_accumulation[-1] = np.max(hourly_accumulation)
 
-  #TODO make cleaner output file handling
+
+  # Calculate hourly hydrograph no peaks
+  hourly_hydrograph_no_peak = generate_hydrograph(hourly_accumulation.copy())
+  
   peak_log_file_name =  location + "_peaks.log"
   peak_log_file = open(peak_log_file_name, "w")
   
   if peaks_file_name: 
 
-    print ("Inserting peaks")
-    peaks_readlines = open(peaks_file_name, "r").readlines()
-    del peaks_readlines[0:7]
-    peak_dates = []
-    peak_values = []
-    peak_types = []
-    peak_dictionary = {}
-    real_dates = {}
-    for line in peaks_readlines:
-      try:
-        line.strip().split()[2]
-        raw_date = line.strip().split()[1]
-        real_date = read_date(raw_date)
-        faux_date = read_faux_date(raw_date)
-        peak_dates.append(faux_date)
-        a = line.strip().split()[2]
-        b = float(a)
-        peak_values.append(b)
-        peak_types.append(line.strip().split()[3])
-        peak_dictionary[faux_date] = b
-        real_dates[faux_date] = real_date
-      except IndexError:
-        peak_log_file.write("Peaksfile: %s \t line: %s, does not contain a \
-          valid peak value, skipping line\n" % (peaks_file_name, line))
+    peak_types, peak_dictionary, real_dates, peak_dates = read_peaks_file(peaks_file_name)
+    peak_values = list(peak_dictionary.values())
   
     for i in range(0, len(peak_dates)):
 
-        if(peak_types[i] == "0"):
-          hourly_accumulation = insert_peak_1am(daily_accumulation, 
-            hourly_accumulation, peak_dates[i], peak_values[i])
-          peak_log_file.write("Inserting peak of %.2f on %s at 1 AM\n" % (peak_values[i], peak_dates[i])) 
+      peak_date = peak_dates[i]
+      peak_value = peak_values[i]
+      peak_type = peak_types[i]
 
-        if(peak_types[i] == "1"):
-          hourly_accumulation = insert_peak_12am(daily_accumulation, 
-            hourly_accumulation, peak_dates[i], peak_values[i])
-          peak_log_file.write("Inserting peak of %.2f on %s at 12 AM\n" % (peak_values[i], peak_dates[i])) 
+      #lets check out the no-peak hydrograph for a given peak date
 
-        if(peak_types[i] == "2"):
-          hourly_accumulation = insert_peak_11am(daily_accumulation, 
-            hourly_accumulation, peak_dates[i], peak_values[i])
-          peak_log_file.write("Inserting peak of %.2f on %s at 11 AM\n" % (peak_values[i], peak_dates[i]))    
+      # sub_hydrograph = hourly_hydrograph_no_peak[(peak_date-5).asfreq('H')-23:(peak_date+5).asfreq('H')+1]
+      # sub_hourly_accum = hourly_accumulation[(peak_date-5).asfreq('H')-23:(peak_date+5).asfreq('H')+1]
+      # sub_daily_accum = daily_accumulation[peak_date-2:peak_date+2]
+
+      # #TODO there is some unwanted mutation in these functions
+      # hourly_accumulation_1 = insert_peak_1am(sub_daily_accum.copy(), 
+      #     sub_hourly_accum.copy(), peak_date, peak_value)
+      # hourly_hydrograph_1 = generate_hydrograph(hourly_accumulation_1)
+
+      # hourly_accumulation_2 = insert_peak_12am(sub_daily_accum.copy(), 
+      #     sub_hourly_accum.copy(), peak_date, peak_value)
+      # hourly_hydrograph_2 = generate_hydrograph(hourly_accumulation_2)
+
+      # hourly_accumulation_3 = insert_peak_11am(sub_daily_accum.copy(), 
+      #   sub_hourly_accum.copy(), peak_date, peak_value)
+      # hourly_hydrograph_3 = generate_hydrograph(hourly_accumulation_3)
+
+      # hourly_accumulation_4 = insert_peak_11pm(sub_daily_accum.copy(), 
+      #     sub_hourly_accum.copy(), peak_date, peak_value)
+      # hourly_hydrograph_4 = generate_hydrograph(hourly_accumulation_4)
+
+      # hourly_accumulation_5 = insert_peak_10pm(sub_daily_accum.copy(), 
+      #     sub_hourly_accum.copy(), peak_date, peak_value)
+      # hourly_hydrograph_5 = generate_hydrograph(hourly_accumulation_5)
+
+      # fig, axes = plt.subplots(nrows=2, ncols=3, sharey=True, sharex=True,figsize=[10,5])
+      # axes = axes.flatten()
+      # name = peaks_file_name.split('\\')[-1].split('.')[0].replace('@', ' ')
+      # sub_hydrograph.plot(label='no-peak',   ax=axes[0])
+      # hourly_hydrograph_1.plot(label='1am',  ax=axes[1])
+      # axes[1].axvline(peak_date.asfreq('H', how='start')+1, color ='k', linestyle='--')
+      # hourly_hydrograph_2.plot(label='12am', ax=axes[2])
+      # axes[2].axvline(peak_date.asfreq('H', how='start')+0, color ='k', linestyle='--')
+      # hourly_hydrograph_3.plot(label='11am', ax=axes[3])
+      # axes[3].axvline(peak_date.asfreq('H', how='start')+11, color ='k', linestyle='--')
+      # hourly_hydrograph_4.plot(label='11pm', ax=axes[4])
+      # axes[4].axvline(peak_date.asfreq('H', how='start')+23, color ='k', linestyle='--')
+      # hourly_hydrograph_4.plot(label='10pm', ax=axes[5])
+      # axes[5].axvline(peak_date.asfreq('H', how='start')+22, color ='k', linestyle='--')
+      # for ax in axes:
+      #   ax.axhline(peak_value, linestyle='-', color='k')
+      #   ax.legend()
+      # plt.suptitle(peak_date.strftime('%d %b %Y'))
+      # plt.tight_layout()
+      # plt.savefig(f"plots/{name}_{peak_date.strftime('%Y_%m_%d')}.png")
+
+      if(peak_type == "0"):
+        hourly_accumulation = insert_peak_1am(daily_accumulation, 
+        hourly_accumulation, peak_date, peak_value)
+        peak_log_file.write("Inserting peak of %.2f on %s at 1 AM\n" %  (peak_value, peak_date)) 
+
+      if(peak_type == "1"):
+        hourly_accumulation = insert_peak_12am(daily_accumulation, 
+        hourly_accumulation, peak_date, peak_value)
+        peak_log_file.write("Inserting peak of %.2f on %s at 12 AM\n" % (peak_value, peak_date)) 
+
+      if(peak_type == "2"):
+        hourly_accumulation = insert_peak_11am(daily_accumulation, 
+        hourly_accumulation, peak_date, peak_value)
+        peak_log_file.write("Inserting peak of %.2f on %s at 11 AM\n" % (peak_value, peak_date))    
        
-        if(peak_types[i] == "3"):
-          hourly_accumulation = insert_peak_11pm(daily_accumulation, 
-            hourly_accumulation, peak_dates[i], peak_values[i])
-          peak_log_file.write("Inserting peak of %.2f on %s at 11 PM\n" % (peak_values[i], peak_dates[i]))    
+      if(peak_type == "3"):
+        hourly_accumulation = insert_peak_11pm(daily_accumulation, 
+        hourly_accumulation, peak_date, peak_value)
+        peak_log_file.write("Inserting peak of %.2f on %s at 11 PM\n" % (peak_value, peak_date))    
           
-        if(peak_types[i] == "4"):
-          hourly_accumulation = insert_peak_10pm(daily_accumulation, 
-            hourly_accumulation, peak_dates[i], peak_values[i])
-          peak_log_file.write("Inserting peak of %.2f on %s at 10 PM\n" % (peak_values[i], peak_dates[i]))  
+      if(peak_type == "4"):
+        hourly_accumulation = insert_peak_10pm(daily_accumulation, 
+        hourly_accumulation, peak_date, peak_value)
+        peak_log_file.write("Inserting peak of %.2f on %s at 10 PM\n" % (peak_value, peak_date))  
 
   else:
     peak_log_file.write("No peaks specified")   
