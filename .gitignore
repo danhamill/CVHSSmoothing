@@ -52,4 +52,4 @@ OUTFILES/Yuba-Feather/ORO.out
 OUTFILES/Yuba-Feather/ORO.out_missing.log
 OUTFILES/Yuba-Feather/ORO.out_peaks.log
 dist/
-smoothing.egg-info/
+CVHSSmoothing.egg-info/
