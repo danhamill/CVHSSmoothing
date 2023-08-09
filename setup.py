@@ -58,7 +58,7 @@ setup(
  long_description=readme,
  packages = find_packages(),
  license='MIT',
- install_requires = get_install_requirements("requirements.txt"),
+ install_requires = ['numpy','pandas','scipy'],
  classifiers=[
     "Development Status :: 4 - Beta",
     'Intended Audience :: Developers',
