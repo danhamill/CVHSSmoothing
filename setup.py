@@ -2,7 +2,7 @@ try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
-from core.version import __version__ as myVersion
+from CVHSSmoothing.version import __version__ as myVersion
 from pathlib import Path
 
 this_directory = Path(__file__).parent
@@ -17,7 +17,7 @@ setup(
  description = 'Cubic spline interpolation of hydrographs',
  long_description=long_description,
  long_description_content_type="text/markdown",
- packages = ['core'],
+ packages = ['CVHSSmoothing'],
  license='MIT',
  version=myVersion,
  install_requires = ['numpy','pandas','scipy'],

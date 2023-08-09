@@ -1,2 +1,2 @@
-from core.Spline import spline
-from core.version import __version__
+from CVHSSmoothing.Spline import spline
+from CVHSSmoothing.version import __version__
