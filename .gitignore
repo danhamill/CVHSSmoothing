@@ -45,11 +45,6 @@ plots/YUBA_R NEW_BULLARDS_BAR_2416_03_08.png
 plots/YUBA_R NEW_BULLARDS_BAR_2417_02_09.png
 plots/YUBA_R NEW_BULLARDS_BAR_2418_03_22.png
 plots/YUBA_R NEW_BULLARDS_BAR_2419_02_14.png
-OUTFILES/Yuba-Feather/NBB.out
-OUTFILES/Yuba-Feather/NBB.out_missing.log
-OUTFILES/Yuba-Feather/NBB.out_peaks.log
-OUTFILES/Yuba-Feather/ORO.out
-OUTFILES/Yuba-Feather/ORO.out_missing.log
-OUTFILES/Yuba-Feather/ORO.out_peaks.log
+OUTFILES/Yuba-Feather/*
 dist/
 CVHSSmoothing.egg-info/

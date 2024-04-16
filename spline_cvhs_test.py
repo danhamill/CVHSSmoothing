@@ -1,6 +1,7 @@
 import pandas as pd
 from CVHSSmoothing.Spline import spline
 from CVHSSmoothing.dss_util import import_smooth_ts
+import os
 
 inputFiles = {
   'CVHS':r'USBC_1DAY\Yuba-Feather\CVHS\DEER_CR_NR_SMARTVILLE.txt',
@@ -12,6 +13,8 @@ outFiles = {
 peaksFiles = {
   'CVHS':r'USBC_PEAKS\DEER_CR_NR_SMARTVILLE.txt'
 }
+
+os.makedirs(r'OUTFILES\Yuba-Feather', exist_ok=True)
 
 out_dss = r"OUTFILES\splineDemo.dss"
 
